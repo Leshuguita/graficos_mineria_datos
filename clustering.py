@@ -49,6 +49,7 @@ X_pca = pca.fit_transform(X_scaled)
 plt.scatter(X_pca[:, 0], X_pca[:, 1], alpha=0.3)
 #plt.show()
 
+# probe complete y ward con 2000 y 3000, y este da el mejor silhouette
 comp_dist_3 = AgglomerativeClustering(n_clusters=None, linkage="complete", distance_threshold=2300).fit(X)
 
 print("Clusters Complete 3000:", comp_dist_3.n_clusters_)
@@ -62,6 +63,30 @@ plt.show()
 # DBSCAN con eps de 26 y 5 min samples da clusters muy similares
 
 
+from sklearn.metrics.pairwise import cosine_similarity
+import numpy as np
 
+def sim_matrix(features, labels):
+    useful_labels = labels >= 0
+
+    indices = np.argsort(labels[useful_labels])
+    sorted_features = features[useful_labels][indices]
+
+    d = cosine_similarity(sorted_features, sorted_features)
+    return d
+
+def plot(data, model):
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(15,5))
+
+    fig.suptitle(f"{model.__class__.__name__}")
+
+    ax1.scatter(data[:,0], data[:,1], c=model.labels_)
+
+    dist = sim_matrix(data, model.labels_)
+    im = ax2.imshow(dist, cmap='cividis', vmin=0.0, vmax=1.0)
+    fig.colorbar(im, ax=ax2)
+
+plot(X_pca, comp_dist_3)
+plt.show()
 
 print("Listo! :)")
